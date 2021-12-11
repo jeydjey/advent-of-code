@@ -1,24 +1,5 @@
 library(magrittr)
 
-data <- read.table("files/day_11_input.txt") %>%
-  tidyr::separate(V1, paste0("V", 0:10), sep = "", convert = T) %>%
-  dplyr::select(-V0)
-
-d <- list()
-
-d$data <- data %>% as.matrix()
-
-d$flash <- integer(100)
-
-for(i in 1:100) {
-  d$data <- d$data+1
-
-  d <- flash(d, i)
-
-}
-
-answer_1 <- d$flash %>% sum()
-
 flash <- function(d, i, flashed = NULL) {
 
   flasher <- which(d$data>9, arr.ind = T)
@@ -49,6 +30,26 @@ neighbours <- function(input, upper = 10) {
 
 }
 
+data <- read.table("files/day_11_input.txt") %>%
+  tidyr::separate(V1, paste0("V", 0:10), sep = "", convert = T) %>%
+  dplyr::select(-V0)
+
+d <- list()
+
+d$data <- data %>% as.matrix()
+
+d$flash <- integer(100)
+
+for(i in 1:100) {
+  d$data <- d$data+1
+
+  d <- flash(d, i)
+
+}
+
+answer_1 <- d$flash %>% sum()
+
+
 d <- list()
 
 d$data <- data %>% as.matrix()
@@ -67,3 +68,5 @@ while(bool) {
   }
 
 }
+
+answer_2 <- i
