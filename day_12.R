@@ -33,9 +33,8 @@ routes <- start %>% dplyr::rename(to_1 = to) %>%
   dplyr::select(id, from, to_1)
 
 bool <- T
-i <- 1
 
-while(bool & i<30) {
+while(bool) {
 
   smalls <- routes %>%
     dplyr::select(id, tidyselect::starts_with("to")) %>%
@@ -61,8 +60,6 @@ while(bool & i<30) {
   if(dplyr::filter(routes, !(is.na(!!rlang::sym(paste0("to_", to+1))) |
                      !!rlang::sym(paste0("to_", to+1)) == "end")) %>% nrow() == 0) {
     bool <- F
-  } else {
-    i <- i+1
   }
 
 }
@@ -73,9 +70,8 @@ routes <- start %>% dplyr::rename(to_1 = to) %>%
   dplyr::select(id, from, to_1)
 
 bool <- T
-i <- 1
 
-while(bool & i<40) {
+while(bool) {
 
   smalls <- routes %>%
     dplyr::select(id, tidyselect::starts_with("to")) %>%
@@ -104,8 +100,6 @@ while(bool & i<40) {
   if(dplyr::filter(routes, !(is.na(!!rlang::sym(paste0("to_", to+1))) |
                              !!rlang::sym(paste0("to_", to+1)) == "end")) %>% nrow() == 0) {
     bool <- F
-  } else {
-    i <- i+1
   }
 
 }
