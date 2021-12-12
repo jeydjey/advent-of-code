@@ -29,79 +29,54 @@ map <- dplyr::bind_rows(
   end
 )
 
+find_path <- function(routes, map, task) {
+
+  bool <- T
+  while(bool) {
+
+    smalls <- routes %>%
+      dplyr::select(id, tidyselect::starts_with("to")) %>%
+      tidyr::pivot_longer(tidyselect::starts_with("to"), names_to = "to", values_to = "val") %>%
+      dplyr::filter(!is.na(val), grepl("[a-z]+", .$val))
+
+    if(task==1) {
+      smalls <- dplyr::distinct(smalls)
+    } else {
+      smalls <- smalls %>%
+        dplyr::count(id, val) %>%
+        dplyr::group_by(id) %>%
+        dplyr::filter(max(n)>1) %>%
+        dplyr::ungroup()
+    }
+
+    to <- grep("to_\\d+", names(routes), value = T) %>%
+      gsub("(to_)(\\d+)", replacement = "\\2", .) %>%
+      as.numeric() %>%
+      max()
+
+    routes <- routes %>%
+      dplyr::left_join(
+        map, by = setNames("from", paste0("to_", to))
+      ) %>%
+      dplyr::anti_join(
+        smalls, by = c("id", "to" = "val")
+      ) %>%
+      dplyr::mutate(id = dplyr::row_number()) %>%
+      dplyr::rename(!!rlang::sym(paste0("to_", to+1)) := to)
+
+    if(dplyr::filter(routes, !(is.na(!!rlang::sym(paste0("to_", to+1))) |
+                               !!rlang::sym(paste0("to_", to+1)) == "end")) %>% nrow() == 0) {
+      bool <- F
+    }
+
+  }
+
+  return(routes)
+}
+
 routes <- start %>% dplyr::rename(to_1 = to) %>%
   dplyr::select(id, from, to_1)
 
-bool <- T
+answer_1 <- find_path(routes, map, 1) %>% nrow()
 
-while(bool) {
-
-  smalls <- routes %>%
-    dplyr::select(id, tidyselect::starts_with("to")) %>%
-    tidyr::pivot_longer(tidyselect::starts_with("to"), names_to = "to", values_to = "val") %>%
-    dplyr::filter(!is.na(val), grepl("[a-z]+", .$val)) %>%
-    dplyr::distinct()
-
-  to <- grep("to_\\d+", names(routes), value = T) %>%
-    gsub("(to_)(\\d+)", replacement = "\\2", .) %>%
-    as.numeric() %>%
-    max()
-
-  routes <- routes %>%
-    dplyr::left_join(
-      map, by = setNames("from", paste0("to_", to))
-    ) %>%
-    dplyr::anti_join(
-      smalls, by = c("id", "to" = "val")
-    ) %>%
-    dplyr::mutate(id = dplyr::row_number()) %>%
-    dplyr::rename(!!rlang::sym(paste0("to_", to+1)) := to)
-
-  if(dplyr::filter(routes, !(is.na(!!rlang::sym(paste0("to_", to+1))) |
-                     !!rlang::sym(paste0("to_", to+1)) == "end")) %>% nrow() == 0) {
-    bool <- F
-  }
-
-}
-
-answer_1 <- nrow(routes)
-
-routes <- start %>% dplyr::rename(to_1 = to) %>%
-  dplyr::select(id, from, to_1)
-
-bool <- T
-
-while(bool) {
-
-  smalls <- routes %>%
-    dplyr::select(id, tidyselect::starts_with("to")) %>%
-    tidyr::pivot_longer(tidyselect::starts_with("to"), names_to = "to", values_to = "val") %>%
-    dplyr::filter(!is.na(val), grepl("[a-z]+", .$val)) %>%
-    dplyr::count(id, val) %>%
-    dplyr::group_by(id) %>%
-    dplyr::filter(max(n)>1) %>%
-    dplyr::ungroup()
-
-  to <- grep("to_\\d+", names(routes), value = T) %>%
-    gsub("(to_)(\\d+)", replacement = "\\2", .) %>%
-    as.numeric() %>%
-    max()
-
-  routes <- routes %>%
-    dplyr::left_join(
-      map, by = setNames("from", paste0("to_", to))
-    ) %>%
-    dplyr::anti_join(
-      smalls, by = c("id", "to" = "val")
-    ) %>%
-    dplyr::mutate(id = dplyr::row_number()) %>%
-    dplyr::rename(!!rlang::sym(paste0("to_", to+1)) := to)
-
-  if(dplyr::filter(routes, !(is.na(!!rlang::sym(paste0("to_", to+1))) |
-                             !!rlang::sym(paste0("to_", to+1)) == "end")) %>% nrow() == 0) {
-    bool <- F
-  }
-
-}
-
-answer_2 <- nrow(routes)
+answer_2 <- find_path(routes, map, 2) %>% nrow()
