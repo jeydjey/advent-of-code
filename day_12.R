@@ -109,3 +109,5 @@ while(bool & i<40) {
   }
 
 }
+
+answer_2 <- nrow(routes)
